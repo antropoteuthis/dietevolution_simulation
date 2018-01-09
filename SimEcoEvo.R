@@ -69,7 +69,7 @@ ultratree = chronos(consensus)
 plot(ultratree)
 
 ##### SIMULATION #####
-nmeasured = 10
+nmeasured = 4
 kind_M = "BM"
 nunmeasured = 8
 kind_U = "BM"
@@ -241,7 +241,7 @@ PDEDdists %>% lm(SqrtPhylogeneticDistance~EcologicalDistance, data=.) -> LMPDED
 ggplot(PDEDdists,aes(x=SqrtPhylogeneticDistance,y=EcologicalDistance))+geom_density2d()+geom_smooth()+geom_jitter(width=0.05,height = 0.05)
 
        #Principal components
-UM_PC1 = prcomp(t(unmeasured))$rotation[,1]
+kind_U
 UMR_PC1 = prcomp(t(UM_Residuals))$rotation[,1]
 phylosig(ultratree, UMR_PC1)
 startree = rescale(ultratree, model = "lambda", 0)
@@ -277,16 +277,11 @@ print("Kappa AICc")
 print(Kmodel$opt$aicc)
 
 diet_PC1 = prcomp(t(diet))$rotation[,1]
-AllMeasured_LM = lm(diet_PC1~measured[,1] + measured[,2] + measured[,3] + PF_PC1)
-
-AMLM_res = AllMeasured_LM$residuals
-physignal(AMLM_res, ultratree)
-
-
 PF_PC1 = prcomp(t(preyfield))$rotation[,1]
-
 phy_PC1 = prcomp(t(phylodist))$rotation[,1]
 morph_PC1 = prcomp(t(measured))$rotation[,1]
+
+phylosig(ultratree, lm(lm(diet_PC1 ~ PF_PC1)$residuals ~ morph_PC1)$residuals)
 
 plot(phy_PC1, morph_PC1)
 text(phy_PC1, morph_PC1, names(phy_PC1), cex=0.4, col="blue")
