@@ -19,56 +19,10 @@ library(phylosignal)
 library(OUwie)
 library(geomorph)
 
-#TREE BUILD
-
-rRNA18S = read.nexus('~/dietevolution_simulation/bipartitions_root.boot10')
-transcriptome = read.tree('~/dietevolution_simulation/ultimatephylo2017.tre')
-#plot.phylo(consensus)
-#is.rooted(consensus)
-#nodelabels()
-rRNA18S = reroot(rRNA18S, 76, 0.001)
-rRNA18S$tip.label = str_replace_all(rRNA18S$tip.label,'_',' ')
-rRNA18S$tip.label[rRNA18S$tip.label=="Cordagalma cordiforme"] = "Cordagalma ordinatum"
-rRNA18S$tip.label[rRNA18S$tip.label=="Cordagalma sp "] = "Cordagalma ordinatum"
-rRNA18S$tip.label[rRNA18S$tip.label=="Clausophyes ovata"] = "Kephyes ovata"
-rRNA18S$tip.label[rRNA18S$tip.label=="Erenna sp"] = "Erenna sirena"
-rRNA18S$tip.label[rRNA18S$tip.label=="Apolemia sp"] = "Apolemia lanosa"
-rRNA18S$tip.label[rRNA18S$tip.label=="Apolemia sp "] = "Apolemia rubriversa"
-rRNA18S$tip.label[rRNA18S$tip.label=="Sphaeronectes gracilis"] = "Sphaeronectes koellikeri"
-rRNA18S$tip.label[rRNA18S$tip.label=="Prayidae D27SS7"] = "Desmophyes haematogaster"
-rRNA18S$tip.label[rRNA18S$tip.label=="Prayidae D27D2"] = "Craseoa lathetica"
-rRNA18S = drop.tip(rRNA18S, 41:42)
-
-transcriptome$tip.label = str_replace_all(transcriptome$tip.label,'_',' ')
-transcriptome$tip.label[transcriptome$tip.label=="Cordagalma cordiforme"] = "Cordagalma ordinatum"
-transcriptome$tip.label[transcriptome$tip.label=="Cordagalma sp "] = "Cordagalma ordinatum"
-transcriptome$tip.label[transcriptome$tip.label=="Clausophyes ovata"] = "Kephyes ovata"
-transcriptome$tip.label[transcriptome$tip.label=="Erenna sp"] = "Erenna sirena"
-transcriptome$tip.label[transcriptome$tip.label=="Apolemia sp"] = "Apolemia lanosa"
-transcriptome$tip.label[transcriptome$tip.label=="Apolemia sp "] = "Apolemia rubriversa"
-transcriptome$tip.label[transcriptome$tip.label=="Sphaeronectes gracilis"] = "Sphaeronectes koellikeri"
-transcriptome$tip.label[transcriptome$tip.label=="Prayidae D27SS7"] = "Desmophyes haematogaster"
-transcriptome$tip.label[transcriptome$tip.label=="Prayidae D27D2"] = "Craseoa lathetica"
-transcriptome = drop.tip(transcriptome, 29:37)
-
-multitree = list(rRNA18S,transcriptome)
-class(multitree)="multiPhylo"
-STree = superTree(multitree)
-#plot(STree)
-consensus = STree[[2]]
-consensus = drop.tip(consensus, "Erenna sirena")
-consensus = bind.tip(consensus,tip.label = "Erenna sirena", where=which(consensus$tip.label=="Erenna richardi"), edge.length = 1)
-consensus$edge.length[consensus$edge.length==0] = c(0.1,0.1)
-consensus$tip.label = str_replace_all(consensus$tip.label,'_',' ')
-consensus = reroot(consensus,59,mean(consensus$edge.length))
-#plot(consensus)
-consensus = drop.tip(consensus, which(consensus$tip.label == "Nectadamas diomedeae" | consensus$tip.label == "Muggiaea atlantica"))
-consensus$edge.length[consensus$edge.length<0] <- 0.1
-consensus = drop.tip(consensus, 50)
-ultratree = chronos(consensus)
-plot(ultratree)
-
 ##### SIMULATION #####
+ultratree <- rtree(50) %>% chronos()
+ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
+
 nmeasured = 4
 kind_M = "BM"
 nunmeasured = 8
