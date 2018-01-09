@@ -19,14 +19,10 @@ library(phylosignal)
 library(OUwie)
 library(geomorph)
 
-#Directory setup
-setwd("~/Dropbox/Simulation_EcoEvo")
-getwd()
-
 #TREE BUILD
 
-rRNA18S = read.nexus('~/Dropbox/bipartitions_root.boot10')
-transcriptome = read.tree('~/Dropbox/Microscopy_Data/ultimatephylo2017.tre')
+rRNA18S = read.nexus('~/dietevolution_simulation/bipartitions_root.boot10')
+transcriptome = read.tree('~/dietevolution_simulation/ultimatephylo2017.tre')
 #plot.phylo(consensus)
 #is.rooted(consensus)
 #nodelabels()
