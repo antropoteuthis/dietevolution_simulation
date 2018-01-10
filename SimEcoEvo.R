@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 6
+nmeasured = 4
 kind_M = "BM"
-nunmeasured = 4
+nunmeasured = 6
 kind_U = "BM"
 
 #Measured Traits
@@ -114,14 +114,18 @@ diet = preyfield*selectivity
 diet = 100*(diet/rowSums(diet))
 #heatmap(as.matrix(diet))
 
-###### Quality Assesment ######
+#DISTANCE MATRICES
+phylodist <- cophenetic(ultratree) %>% as.matrix()
+morphdist <- vegdist(measured,"euc") %>% as.matrix()
+unmeasureddist <- vegdist(unmeasured,"euc") %>% as.matrix()
+traitdist <- vegdist(traits, "euc") %>% as.matrix()
 dietdist <- vegdist(diet, "bray") %>% as.matrix()
 selecdist <- vegdist(selectivity, "euc") %>% as.matrix()
-traitdist <- vegdist(traits, "euc") %>% as.matrix()
 preyfielddist <- vegdist(preyfield,"bray") %>% as.matrix()
 
+###### Quality Assesment ######
   #These should all be TRUE
-mantel(preyfielddist, traitdist)$signif > 0.05
+mantel.partial(preyfielddist, traitdist, phylodist)$signif > 0.05
 mantel(dietdist, selecdist)$signif < 0.05
 mantel(traitdist, selecdist)$signif < 0.05
 mantel(dietdist, traitdist)$signif < 0.05
@@ -170,16 +174,12 @@ cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+l
 #THIS STUFF WORKS, ALREADY TESTED. ONLY ODD THING IS THAT OU TRAITS COME OUT AS Delta or Kappa
 
 #Mantel testing
-phylodist <- cophenetic(ultratree) %>% as.matrix()
-morphdist <- vegdist(measured,"euc") %>% as.matrix()
-unmeasureddist <- vegdist(unmeasured,"euc") %>% as.matrix()
-
 mantel(dietdist, morphdist)$signif < 0.05
 mantel(dietdist, preyfielddist)$signif < 0.05
 mantel(dietdist, phylodist)$signif < 0.05
 mantel(morphdist, phylodist)$signif < 0.05
-mantel.partial(dietdist, phylodist, morphdist)$signif < 0.05
-mantel.partial(dietdist, morphdist, phylodist)$signif > 0.05
+mantel.partial(dietdist, phylodist, morphdist)$signif 
+mantel.partial(dietdist, morphdist, phylodist)$signif 
 mantel.partial(dietdist, preyfielddist, phylodist)$signif < 0.05
 mantel.partial(dietdist, phylodist, preyfielddist)$signif < 0.05
 mantel.partial(dietdist, preyfielddist, morphdist)$signif < 0.05
@@ -207,6 +207,13 @@ cbind(sqrt(as.numeric(phylodist)), as.numeric(dietdist)) %>% as.data.frame() -> 
 names(PDEDdists) = c("SqrtPhylogeneticDistance","EcologicalDistance")
 PDEDdists %>% lm(SqrtPhylogeneticDistance~EcologicalDistance, data=.) -> LMPDED
 ggplot(PDEDdists,aes(x=SqrtPhylogeneticDistance,y=EcologicalDistance))+geom_density2d()+geom_smooth()+geom_jitter(width=0.05,height = 0.05)
+
+    #MDS/PCoA
+cmdscale(UM_Residuals) %>% plot()
+text(cmdscale(dietdist), ultratree$tip.label)
+
+Phy_PCOA <- pcoa(phylodist)
+UMR_PCOA <- pcoa(UM_Residuals)
 
        #Principal components
 kind_U
