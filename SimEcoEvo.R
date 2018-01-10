@@ -179,6 +179,11 @@ mantel(dietdist, preyfielddist)$signif < 0.05
 mantel(dietdist, phylodist)$signif < 0.05
 mantel(morphdist, phylodist)$signif < 0.05
 mantel.partial(dietdist, phylodist, morphdist)$signif < 0.05
+mantel.partial(dietdist, morphdist, phylodist)$signif > 0.05
+mantel.partial(dietdist, preyfielddist, phylodist)$signif < 0.05
+mantel.partial(dietdist, phylodist, preyfielddist)$signif < 0.05
+mantel.partial(dietdist, preyfielddist, morphdist)$signif < 0.05
+mantel.partial(dietdist, morphdist, preyfielddist)$signif < 0.05
 
 MM_dm = multi.mantel(dietdist, morphdist, nperm=99)
 dm_residuals = as.matrix(MM_dm$residuals)
