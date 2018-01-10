@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 4
+nmeasured = 6
 kind_M = "BM"
-nunmeasured = 8
+nunmeasured = 4
 kind_U = "BM"
 
 #Measured Traits
@@ -65,20 +65,31 @@ unmeasured = unmeasured[,-1]
 names(unmeasured) = paste(rep("UT",ncol(unmeasured)), 1:ncol(unmeasured), sep= "")
 
 #Habitat
-habitat = abs(2^abs(rTraitCont(ultratree, model="BM", root.value = 6, sigma = 3)) + runif(length(ultratree$tip.label),min=0, max=200))
+habitat = abs(abs(rTraitCont(ultratree, model="BM", root.value = 200, sigma = 200)) + runif(length(ultratree$tip.label),min=200, max=200))
 phylosig(ultratree, habitat)
+#barplot(habitat[order(habitat, decreasing = T)])
+habitat_zones = habitat
+habitat_zones[habitat < quantile(habitat)[5] | habitat == quantile(habitat)[5]] <- 4
+habitat_zones[habitat < quantile(habitat)[4]] <- 3
+habitat_zones[habitat < quantile(habitat)[3]] <- 2
+habitat_zones[habitat < quantile(habitat)[2]] <- 1
+phylosignal(habitat_zones,ultratree)
 
 #Prey availability
-preyfield = as.data.frame(ultratree$tip.label)
-foodtypes = c("Krill", "Copepods", "Ostracods", "Decapods", "Gelata", "Fish", "Chaetognaths")
-for(i in 1:length(foodtypes)){
-  #preyfield = cbind(preyfield, as.integer(habitat*runif(nrow(preyfield), 0.1, 10))) #uncomment to make it habitat dependet and thus insert residual phylogenetic signal
-  preyfield = cbind(preyfield, as.integer(runif(nrow(preyfield), 0.1, 1000)))
+foodtypes = paste(rep("F",6),1:6,sep="")
+preyfields = list()
+for(i in 1:max(habitat_zones)){
+  preyfields[[i]] <- as.integer(runif(length(foodtypes), 0.1, 1000))
+  names(preyfields[[i]]) = foodtypes
 }
-preyfield = preyfield[,-1]
-preyfield = (preyfield/rowSums(preyfield))*100
-names(preyfield) = foodtypes
+preyfield = foodtypes
+for(i in 1:length(habitat_zones)){
+  preyfield = rbind(preyfield, preyfields[[habitat_zones[i]]]) 
+}
+preyfield = as.data.frame(apply(preyfield[-1,], 2, as.numeric))
 rownames(preyfield) = ultratree$tip.label
+preyfield = (preyfield/rowSums(preyfield))*100
+physignal(preyfield, ultratree)
 
 #Diet
 if(nunmeasured>0){traits = cbind(measured, unmeasured)
@@ -108,10 +119,14 @@ dietdist <- vegdist(diet, "bray") %>% as.matrix()
 selecdist <- vegdist(selectivity, "euc") %>% as.matrix()
 traitdist <- vegdist(traits, "euc") %>% as.matrix()
 preyfielddist <- vegdist(preyfield,"bray") %>% as.matrix()
+
+  #These should all be TRUE
 mantel(preyfielddist, traitdist)$signif > 0.05
 mantel(dietdist, selecdist)$signif < 0.05
 mantel(traitdist, selecdist)$signif < 0.05
 mantel(dietdist, traitdist)$signif < 0.05
+
+  #There should be more than 10 correlations between traits and prey types ingested
 cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+length(foodtypes)))] %>% .[.<0.05 & .>0] %>% length()
 
 ###### Analysis ######
@@ -163,6 +178,7 @@ mantel(dietdist, morphdist)$signif < 0.05
 mantel(dietdist, preyfielddist)$signif < 0.05
 mantel(dietdist, phylodist)$signif < 0.05
 mantel(morphdist, phylodist)$signif < 0.05
+mantel.partial(dietdist, phylodist, morphdist)$signif < 0.05
 
 MM_dm = multi.mantel(dietdist, morphdist, nperm=99)
 dm_residuals = as.matrix(MM_dm$residuals)
