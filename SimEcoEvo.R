@@ -3,20 +3,13 @@
 rm(list=ls())
 par(ask=F)
 #Load libraries
-library(reshape2)
-library(dplyr)
 library(tidyverse)
-library(stringr)
 library(vegan)
 library(ape)
-library(phangorn)
 library(phytools)
 library(picante)
 library(geiger)
 library(phylobase)
-library(fields)
-library(phylosignal)
-library(OUwie)
 library(geomorph)
 
 ##### SIMULATION #####
