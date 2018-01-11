@@ -150,16 +150,16 @@ cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+l
 # for(c in 1:ncol(measured)){
 #   C = measured[,c]
 #   names(C) = rownames(measured)
-#   Ctree = ultratree
-#   BMmodel <- fitContinuous(Ctree, C, model="BM")
-#   WNmodel <- fitContinuous(Ctree, C, model="white")
-#   DRIFTmodel <- fitContinuous(Ctree, C, model="drift")
-#   EBmodel <- fitContinuous(Ctree, C, model="EB")
-#   OUmodel <- fitContinuous(Ctree, C, model="OU")
-#   TRmodel <- fitContinuous(Ctree, C, model="trend")
-#   Dmodel <- fitContinuous(Ctree, C, model="delta")
-#   Lmodel <- fitContinuous(Ctree, C, model="lambda")
-#   Kmodel <- fitContinuous(Ctree, C, model="kappa")
+#   ultratree = ultratree
+#   BMmodel <- fitContinuous(ultratree, C, model="BM")
+#   WNmodel <- fitContinuous(ultratree, C, model="white")
+#   DRIFTmodel <- fitContinuous(ultratree, C, model="drift")
+#   EBmodel <- fitContinuous(ultratree, C, model="EB")
+#   OUmodel <- fitContinuous(ultratree, C, model="OU")
+#   TRmodel <- fitContinuous(ultratree, C, model="trend")
+#   Dmodel <- fitContinuous(ultratree, C, model="delta")
+#   Lmodel <- fitContinuous(ultratree, C, model="lambda")
+#   Kmodel <- fitContinuous(ultratree, C, model="kappa")
 #   print(names(measured)[c])
 #   print("WN AICc")
 #   print(WNmodel$opt$aicc)
@@ -218,20 +218,59 @@ names(PDEDdists) = c("SqrtPhylogeneticDistance","EcologicalDistance")
 PDEDdists %>% lm(SqrtPhylogeneticDistance~EcologicalDistance, data=.) -> LMPDED
 ggplot(PDEDdists,aes(x=SqrtPhylogeneticDistance,y=EcologicalDistance))+geom_density2d()+geom_smooth()+geom_jitter(width=0.05,height = 0.05)
 
-    #MDS/PCoA
-cmdscale(UM_Residuals) %>% plot()
-text(cmdscale(dietdist), ultratree$tip.label)
-
+    #Principal Coordinate Analysis
+diet_PCOA <- pcoa(dietdist)
+diet_PCOA$values$Broken_stick %>% barplot(.[order(.)])
+PF_PCOA <- pcoa(preyfielddist)
+PF_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 Phy_PCOA <- pcoa(phylodist)
+Phy_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 UMR_PCOA <- pcoa(UM_Residuals)
-BM_PCOA <- pcoa(BMrefDist)
-OU_PCOA <- pcoa(OUrefDist)
+UMR_PCOA$values$Broken_stick %>% barplot(.[order(.)])
+plot(cmdscale(UM_Residuals), cmdscale(phylodist))
+Morph_PCOA <- pcoa(morphdist)
+Morph_PCOA$values$Broken_stick %>% barplot(.[order(.)])
+nmeasured
+
+kind_M
+startree = rescale(ultratree, model = "lambda", 0)
+for(c in 1:ncol(Morph_PCOA$vectors)){
+  C = Morph_PCOA$vectors[,c]
+  names(C) = ultratree$tip.label
+  StarModel <- fitContinuous(ultratree, C, model="BM")
+  BMmodel <- fitContinuous(ultratree, C, model="BM")
+  WNmodel <- fitContinuous(ultratree, C, model="white")
+  DRIFTmodel <- fitContinuous(ultratree, C, model="drift")
+  EBmodel <- fitContinuous(ultratree, C, model="EB")
+  OUmodel <- fitContinuous(ultratree, C, model="OU")
+  TRmodel <- fitContinuous(ultratree, C, model="trend")
+  Dmodel <- fitContinuous(ultratree, C, model="delta")
+  Lmodel <- fitContinuous(ultratree, C, model="lambda")
+  Kmodel <- fitContinuous(ultratree, C, model="kappa")
+  print("WN AICc")
+  print(WNmodel$opt$aicc)
+  print("BM AICc")
+  print(BMmodel$opt$aicc)
+  print("drift AICc")
+  print(DRIFTmodel$opt$aicc)
+  print("EB AICc")
+  print(EBmodel$opt$aicc)
+  print("OU AICc")
+  print(OUmodel$opt$aicc)
+  print("Trend AICc")
+  print(TRmodel$opt$aicc)
+  print("Delta AICc")
+  print(Dmodel$opt$aicc)
+  print("Lambda AICc")
+  print(Lmodel$opt$aicc)
+  print("Kappa AICc")
+  print(Kmodel$opt$aicc)
+}
 
        #Principal components
 kind_U
 UMR_PC1 = prcomp(t(UM_Residuals))$rotation[,1]
 phylosig(ultratree, UMR_PC1)
-startree = rescale(ultratree, model = "lambda", 0)
 StarModel <- fitContinuous(startree, UMR_PC1, model="BM")
 BMmodel <- fitContinuous(ultratree, UMR_PC1, model="BM")
 WNmodel <- fitContinuous(ultratree, UMR_PC1, model="white")
