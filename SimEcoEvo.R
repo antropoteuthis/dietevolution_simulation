@@ -64,6 +64,16 @@ for(i in 1:N_OU_u){
 unmeasured = unmeasured[,-1]
 names(unmeasured) = paste(rep("UT",ncol(unmeasured)), 1:ncol(unmeasured), sep= "")
 
+#Reference traits
+refTs <- cbind(rTraitCont(ultratree, model="OU", alpha=runif(1,min=0,max=1), sigma = VAL-runif(1, min=1, max=VAL), root.value = VAL, theta=VAL+runif(1, min=-VAL/2, max=VAL)), rTraitCont(ultratree, model="BM", root.value = VAL, sigma=VAL-runif(1, min=1, max=VAL))) %>% as.data.frame()
+names(refTs) = c("OU", "BM")
+BMrefDist = vegdist(refTs$BM,"euc") %>% as.matrix()
+OUrefDist = vegdist(refTs$OU,"euc") %>% as.matrix()
+colnames(OUrefDist) = ultratree$tip.label
+colnames(BMrefDist) = ultratree$tip.label
+rownames(OUrefDist) = ultratree$tip.label
+rownames(BMrefDist) = ultratree$tip.label
+
 #Habitat
 habitat = abs(abs(rTraitCont(ultratree, model="BM", root.value = 200, sigma = 200)) + runif(length(ultratree$tip.label),min=200, max=200))
 phylosig(ultratree, habitat)
@@ -214,6 +224,8 @@ text(cmdscale(dietdist), ultratree$tip.label)
 
 Phy_PCOA <- pcoa(phylodist)
 UMR_PCOA <- pcoa(UM_Residuals)
+BM_PCOA <- pcoa(BMrefDist)
+OU_PCOA <- pcoa(OUrefDist)
 
        #Principal components
 kind_U
