@@ -238,22 +238,13 @@ UM_evo_Residuals = as.matrix(multi.mantel(UM_Residuals, phylodist, nperm=99)$fit
 Phy_PCOA <- pcoa(phylodist)
 PCOAPCAPhy <- prcomp(t(Phy_PCOA$vectors))$rotation[,1:8]
 
-VP_OrgDet = varpart(as.dist(dprey_residuals), X = unmeasured, measured)
-#Non-Preyfield Variance variance in diet explained by:
-#Unmeasured evolving traits   |   Measured Morphology
-paste(as.integer(VP_OrgDet$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
-#Residuals left:
-paste(as.integer(VP_OrgDet$part$indfract$Adj.R.square[4]*100), "%", sep="")
+#EXPECTED VARIANCE DECOMPOSITION:
+VP_ALL = as.integer(varpart(diet, X = preyfield, measured, unmeasured)$part$indfract$Adj.R.square[c(1:3,8)]*100)
+paste("   Preyfield:", paste(VP_ALL[1], "%", sep=""), "   Measured traits:", paste(VP_ALL[2], "%", sep=""), "   Unmeasured traits:", paste(VP_ALL[3], "%", sep=""), "   Non-Evolutionary Residuals:", paste(VP_ALL[4], "%", sep=""), sep=" ")
 
-#EXPECTED VARIANCE EXPLAINED BY UNMEASURED TRAITS:
-as.integer(VP_DPM$part$indfract$Adj.R.square[4]*100)*VP_OrgDet$part$fract$Adj.R.square[1]
-
-varpart(as.dist(UM_ran_Residuals), X = unmeasured, measured) -> Resvars
-#Unexplained Variance explained by:
-#Unmeasured evolving traits   |   Measured Morphology
-paste(as.integer(Resvars$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
-#Residuals left:
-paste(as.integer(Resvars$part$indfract$Adj.R.square[4]*100), "%", sep="")
+#NON-Distance based approach
+VP_DPM_NonD = varpart(diet, X = preyfield, measured)
+VP_DPM_NonD
 
 #Figuring out number of traits involved
 cbind(sqrt(as.numeric(phylodist)), as.numeric(morphdist)) %>% as.data.frame() -> PDEDdists
@@ -279,41 +270,41 @@ Morph_PCOA <- pcoa(morphdist)
 Morph_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 nmeasured
 
-  #Identify the evolution behind morphological traits from the PCos of morphological dissimilarity square matrix
-kind_M
-startree = rescale(ultratree, model = "lambda", 0)
-for(c in 1:ncol(Morph_PCOA$vectors)){
-  C = Morph_PCOA$vectors[,c]
-  names(C) = ultratree$tip.label
-  StarModel <- fitContinuous(ultratree, C, model="BM")
-  BMmodel <- fitContinuous(ultratree, C, model="BM")
-  WNmodel <- fitContinuous(ultratree, C, model="white")
-  DRIFTmodel <- fitContinuous(ultratree, C, model="drift")
-  EBmodel <- fitContinuous(ultratree, C, model="EB")
-  OUmodel <- fitContinuous(ultratree, C, model="OU")
-  TRmodel <- fitContinuous(ultratree, C, model="trend")
-  Dmodel <- fitContinuous(ultratree, C, model="delta")
-  Lmodel <- fitContinuous(ultratree, C, model="lambda")
-  Kmodel <- fitContinuous(ultratree, C, model="kappa")
-  print("WN AICc")
-  print(WNmodel$opt$aicc)
-  print("BM AICc")
-  print(BMmodel$opt$aicc)
-  print("drift AICc")
-  print(DRIFTmodel$opt$aicc)
-  print("EB AICc")
-  print(EBmodel$opt$aicc)
-  print("OU AICc")
-  print(OUmodel$opt$aicc)
-  print("Trend AICc")
-  print(TRmodel$opt$aicc)
-  print("Delta AICc")
-  print(Dmodel$opt$aicc)
-  print("Lambda AICc")
-  print(Lmodel$opt$aicc)
-  print("Kappa AICc")
-  print(Kmodel$opt$aicc)
-}
+  #Identify the evolution behind morphological traits from the PCos of morphological dissimilarity square matrix WORKS
+# kind_M
+# startree = rescale(ultratree, model = "lambda", 0)
+# for(c in 1:ncol(Morph_PCOA$vectors)){
+#   C = Morph_PCOA$vectors[,c]
+#   names(C) = ultratree$tip.label
+#   StarModel <- fitContinuous(ultratree, C, model="BM")
+#   BMmodel <- fitContinuous(ultratree, C, model="BM")
+#   WNmodel <- fitContinuous(ultratree, C, model="white")
+#   DRIFTmodel <- fitContinuous(ultratree, C, model="drift")
+#   EBmodel <- fitContinuous(ultratree, C, model="EB")
+#   OUmodel <- fitContinuous(ultratree, C, model="OU")
+#   TRmodel <- fitContinuous(ultratree, C, model="trend")
+#   Dmodel <- fitContinuous(ultratree, C, model="delta")
+#   Lmodel <- fitContinuous(ultratree, C, model="lambda")
+#   Kmodel <- fitContinuous(ultratree, C, model="kappa")
+#   print("WN AICc")
+#   print(WNmodel$opt$aicc)
+#   print("BM AICc")
+#   print(BMmodel$opt$aicc)
+#   print("drift AICc")
+#   print(DRIFTmodel$opt$aicc)
+#   print("EB AICc")
+#   print(EBmodel$opt$aicc)
+#   print("OU AICc")
+#   print(OUmodel$opt$aicc)
+#   print("Trend AICc")
+#   print(TRmodel$opt$aicc)
+#   print("Delta AICc")
+#   print(Dmodel$opt$aicc)
+#   print("Lambda AICc")
+#   print(Lmodel$opt$aicc)
+#   print("Kappa AICc")
+#   print(Kmodel$opt$aicc)
+# }
 
        #Principal components
 kind_U
