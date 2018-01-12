@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 8
+nmeasured = 4
 kind_M = "BM"
-nunmeasured = 6
+nunmeasured = 4
 kind_U = "BM"
 
 #Measured Traits
@@ -149,8 +149,12 @@ paste("Habitat in Preyfield:   ", paste(floor((varpart(preyfield, habitat, refTs
 paste("Phylogeny in measured:   ", paste(floor((varpart(measured, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
 paste("Phylogeny in unmeasured:   ", paste(floor((varpart(unmeasured, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
 paste("Phylogeny in habitat:   ", paste(floor((varpart(habitat, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
-VP_ALL = varpart(diet, X = preyfield, habitat, measured, unmeasured)$part
-paste("   Preyfield:", paste(floor((VP_ALL$contr2$Adj.R.square)*100)[1], "%", sep=""), "   Habitat:", paste(floor((VP_ALL$fract$Adj.R.square)*100)[2], "%", sep=""), "   Measured traits:", paste(floor(VP_ALL$contr2$Adj.R.square[7]*100), "%", sep=""), "   Unmeasured traits:", paste(floor(VP_ALL$contr2$Adj.R.square[11]*100), "%", sep=""), "   Non-Evolutionary Residuals:", paste(floor(VP_ALL$indfrac$Adj.R.square[16]*100), "%", sep=""), sep=" ")
+VP_Sel = varpart(selectivity, measured, unmeasured)$part$indfract$Adj.R.square
+paste("Measured Selectivity:   ", paste(floor((VP_Sel[1])*100)), "%", sep="")
+paste("Uneasured Selectivity:   ", paste(floor((VP_Sel[3])*100)), "%", sep="")
+paste("Stochastic Selectivity:   ", paste(floor((VP_Sel[4])*100)), "%", sep="")
+VP_ALL = varpart(diet, X = preyfield, habitat, selectivity)$part
+paste("   Preyfield:", paste(abs(floor((VP_ALL$indfrac$Adj.R.square)*100)[1]), "%", sep=""), "   Habitat:", paste(abs(floor((VP_ALL$fract$Adj.R.square)*100)[2]), "%", sep=""), "   Selectivity:", paste(abs(floor(VP_ALL$contr1$Adj.R.square[5]*100)), "%", sep=""), "   Non-Evolutionary Residuals:", paste(floor(VP_ALL$indfrac$Adj.R.square[8]*100), "%", sep=""), sep=" ")
 
 ###### Analysis ######
 
