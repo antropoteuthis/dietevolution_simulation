@@ -16,10 +16,10 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 7
+nmeasured = 8
 kind_M = "BM"
-nunmeasured = 7
-kind_U = "OU"
+nunmeasured = 6
+kind_U = "BM"
 
 #Measured Traits
 measured = as.data.frame(ultratree$tip.label)
@@ -65,7 +65,7 @@ unmeasured = unmeasured[,-1]
 names(unmeasured) = paste(rep("UT",ncol(unmeasured)), 1:ncol(unmeasured), sep= "")
 
 #Reference traits
-refTs <- cbind(rTraitCont(ultratree, model="OU", alpha=runif(1,min=0,max=1), sigma = VAL-runif(1, min=1, max=VAL), root.value = VAL, theta=VAL+runif(1, min=-VAL/2, max=VAL)), rTraitCont(ultratree, model="BM", root.value = VAL, sigma=VAL-runif(1, min=1, max=VAL))) %>% as.data.frame()
+refTs <- cbind(rTraitCont(ultratree, model="OU"), rTraitCont(ultratree, model="BM")) %>% as.data.frame()
 names(refTs) = c("OU", "BM")
 BMrefDist = vegdist(refTs$BM,"euc") %>% as.matrix()
 OUrefDist = vegdist(refTs$OU,"euc") %>% as.matrix()
@@ -111,7 +111,7 @@ traits= abs(traits)
 selectivity = preyfield
  for(i in 1:length(foodtypes)){
    #traits_i = traits[,sample(1:ncol(traits),2)]
-   traits_i = traits[,sample(1:ncol(traits),floor(ncol(traits)/4))]
+   traits_i = traits[,sample(1:ncol(traits),round(ncol(traits)/4))]
    if(ncol(traits)<4){traits_i = traits[,sample(1:ncol(traits),1)]}
    for(j in 1:length(ultratree$tip.label))
      #selectivity[j,i] <- (mean(traits_i[,1])/traits_i[j,1])*(mean(traits_i[,2])/traits_i[j,2])
@@ -142,6 +142,15 @@ mantel(dietdist, traitdist)$signif < 0.05
 
   #There should be more than 10 correlations between traits and prey types ingested
 cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+length(foodtypes)))] %>% .[.<0.05 & .>0] %>% length()
+
+  #EXPECTED VARIANCE DECOMPOSITION:
+paste("Phylogeny in Diet:   ", paste(floor((varpart(diet, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
+paste("Habitat in Preyfield:   ", paste(floor((varpart(preyfield, habitat, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
+paste("Phylogeny in measured:   ", paste(floor((varpart(measured, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
+paste("Phylogeny in unmeasured:   ", paste(floor((varpart(unmeasured, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
+paste("Phylogeny in habitat:   ", paste(floor((varpart(habitat, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
+VP_ALL = varpart(diet, X = preyfield, habitat, measured, unmeasured)$part
+paste("   Preyfield:", paste(floor((VP_ALL$contr2$Adj.R.square)*100)[1], "%", sep=""), "   Habitat:", paste(floor((VP_ALL$fract$Adj.R.square)*100)[2], "%", sep=""), "   Measured traits:", paste(floor(VP_ALL$contr2$Adj.R.square[7]*100), "%", sep=""), "   Unmeasured traits:", paste(floor(VP_ALL$contr2$Adj.R.square[11]*100), "%", sep=""), "   Non-Evolutionary Residuals:", paste(floor(VP_ALL$indfrac$Adj.R.square[16]*100), "%", sep=""), sep=" ")
 
 ###### Analysis ######
 
@@ -238,13 +247,9 @@ UM_evo_Residuals = as.matrix(multi.mantel(UM_Residuals, phylodist, nperm=99)$fit
 Phy_PCOA <- pcoa(phylodist)
 PCOAPCAPhy <- prcomp(t(Phy_PCOA$vectors))$rotation[,1:8]
 
-#EXPECTED VARIANCE DECOMPOSITION:
-VP_ALL = as.integer(varpart(diet, X = preyfield, measured, unmeasured)$part$indfract$Adj.R.square[c(1:3,8)]*100)
-paste("   Preyfield:", paste(VP_ALL[1], "%", sep=""), "   Measured traits:", paste(VP_ALL[2], "%", sep=""), "   Unmeasured traits:", paste(VP_ALL[3], "%", sep=""), "   Non-Evolutionary Residuals:", paste(VP_ALL[4], "%", sep=""), sep=" ")
-
 #NON-Distance based approach
 VP_DPM_NonD = varpart(diet, X = preyfield, measured)
-VP_DPM_NonD
+VP_DPM_NonD$part %>% str()
 
 #Figuring out number of traits involved
 cbind(sqrt(as.numeric(phylodist)), as.numeric(morphdist)) %>% as.data.frame() -> PDEDdists
