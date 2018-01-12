@@ -19,7 +19,7 @@ ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 nmeasured = 4
 kind_M = "BM"
 nunmeasured = 6
-kind_U = "BM"
+kind_U = "OU"
 
 #Measured Traits
 measured = as.data.frame(ultratree$tip.label)
@@ -194,6 +194,13 @@ mantel.partial(dietdist, preyfielddist, phylodist)$signif < 0.05
 mantel.partial(dietdist, phylodist, preyfielddist)$signif < 0.05
 mantel.partial(dietdist, preyfielddist, morphdist)$signif < 0.05
 mantel.partial(dietdist, morphdist, preyfielddist)$signif < 0.05
+rda(diet, measured, preyfield)
+rda(diet, preyfield, measured)
+rda(diet, measured, phylodist)
+
+varpart(Y = as.dist(dietdist), X =  preyfield, measured)
+varpart(Y = as.dist(dietdist), X =  habitat_zones, measured)
+varpart(Y = as.dist(dietdist), X =  habitat, measured)
 
 MM_dm = multi.mantel(dietdist, morphdist, nperm=99)
 dm_residuals = as.matrix(MM_dm$residuals)
@@ -201,11 +208,21 @@ MM_dprey = multi.mantel(dietdist, preyfielddist, nperm=99)
 dprey_residuals = as.matrix(MM_dprey$residuals)
 MM_dp = multi.mantel(dietdist, phylodist, nperm=99)
 dp_residuals = as.matrix(MM_dp$residuals)
+MM_mp = multi.mantel(morphdist, phylodist, nperm=99)
+mp_residuals = as.matrix(MM_mp$residuals)
+
+varpart(Y = as.dist(dp_residuals), X =  habitat_zones, measured)
 
        #Unmeasured residuals
 UM_Residuals = as.matrix(multi.mantel(dm_residuals, preyfielddist, nperm=99)$residuals)
 mantel(UM_Residuals, unmeasureddist)$signif < 0.05
 mantel(UM_Residuals, phylodist)$signif < 0.05
+mantel(UM_Residuals, BMrefDist)$signif
+mantel(UM_Residuals, OUrefDist)$signif
+
+Phy_PCOA <- pcoa(phylodist)
+PCOAPCAPhy <- prcomp(t(Phy_PCOA$vectors))$rotation[,1:8]
+varpart(as.dist(UM_Residuals), X = unmeasured, PCOAPCAPhy) -> Resvars
 
 #Figuring out number of traits involved
 cbind(sqrt(as.numeric(phylodist)), as.numeric(morphdist)) %>% as.data.frame() -> PDEDdists
@@ -223,7 +240,6 @@ diet_PCOA <- pcoa(dietdist)
 diet_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 PF_PCOA <- pcoa(preyfielddist)
 PF_PCOA$values$Broken_stick %>% barplot(.[order(.)])
-Phy_PCOA <- pcoa(phylodist)
 Phy_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 UMR_PCOA <- pcoa(UM_Residuals)
 UMR_PCOA$values$Broken_stick %>% barplot(.[order(.)])
@@ -232,6 +248,7 @@ Morph_PCOA <- pcoa(morphdist)
 Morph_PCOA$values$Broken_stick %>% barplot(.[order(.)])
 nmeasured
 
+  #Identify the evolution behind morphological traits from the PCos of morphological dissimilarity square matrix
 kind_M
 startree = rescale(ultratree, model = "lambda", 0)
 for(c in 1:ncol(Morph_PCOA$vectors)){
