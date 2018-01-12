@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 4
+nmeasured = 7
 kind_M = "BM"
-nunmeasured = 6
+nunmeasured = 7
 kind_U = "OU"
 
 #Measured Traits
@@ -194,13 +194,30 @@ mantel.partial(dietdist, preyfielddist, phylodist)$signif < 0.05
 mantel.partial(dietdist, phylodist, preyfielddist)$signif < 0.05
 mantel.partial(dietdist, preyfielddist, morphdist)$signif < 0.05
 mantel.partial(dietdist, morphdist, preyfielddist)$signif < 0.05
-rda(diet, measured, preyfield)
-rda(diet, preyfield, measured)
-rda(diet, measured, phylodist)
+DM_P = rda(diet, measured, preyfield)
+DM_P$CA
+DP_M = rda(diet, preyfield, measured)
 
-varpart(Y = as.dist(dietdist), X =  preyfield, measured)
-varpart(Y = as.dist(dietdist), X =  habitat_zones, measured)
-varpart(Y = as.dist(dietdist), X =  habitat, measured)
+VP_DPM = varpart(Y = as.dist(dietdist), X =  preyfield, measured)
+#Variance explained by:
+#Preyfield   |   Measured Morphology
+paste(as.integer(VP_DPM$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
+#Residuals left:
+paste(as.integer(VP_DPM$part$indfract$Adj.R.square[4]*100), "%", sep="")
+
+VP_DHM = varpart(Y = as.dist(dietdist), X =  habitat_zones, measured)
+#Variance explained by:
+#Habitat   |   Measured Morphology
+paste(as.integer(VP_DHM$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
+#Residuals left:
+paste(as.integer(VP_DHM$part$indfract$Adj.R.square[4]*100), "%", sep="")
+
+VP_DHdM = varpart(Y = as.dist(dietdist), X =  habitat, measured)
+#Variance explained by:
+#Habitat Depth   |   Measured Morphology
+paste(as.integer(VP_DHdM$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
+#Residuals left:
+paste(as.integer(VP_DHdM$part$indfract$Adj.R.square[4]*100), "%", sep="")
 
 MM_dm = multi.mantel(dietdist, morphdist, nperm=99)
 dm_residuals = as.matrix(MM_dm$residuals)
@@ -211,18 +228,32 @@ dp_residuals = as.matrix(MM_dp$residuals)
 MM_mp = multi.mantel(morphdist, phylodist, nperm=99)
 mp_residuals = as.matrix(MM_mp$residuals)
 
-varpart(Y = as.dist(dp_residuals), X =  habitat_zones, measured)
-
        #Unmeasured residuals
 UM_Residuals = as.matrix(multi.mantel(dm_residuals, preyfielddist, nperm=99)$residuals)
 mantel(UM_Residuals, unmeasureddist)$signif < 0.05
 mantel(UM_Residuals, phylodist)$signif < 0.05
-mantel(UM_Residuals, BMrefDist)$signif
-mantel(UM_Residuals, OUrefDist)$signif
+UM_ran_Residuals = as.matrix(multi.mantel(UM_Residuals, phylodist, nperm=99)$residuals)
+UM_evo_Residuals = as.matrix(multi.mantel(UM_Residuals, phylodist, nperm=99)$fitted.values)
 
 Phy_PCOA <- pcoa(phylodist)
 PCOAPCAPhy <- prcomp(t(Phy_PCOA$vectors))$rotation[,1:8]
-varpart(as.dist(UM_Residuals), X = unmeasured, PCOAPCAPhy) -> Resvars
+
+VP_OrgDet = varpart(as.dist(dprey_residuals), X = unmeasured, measured)
+#Non-Preyfield Variance variance in diet explained by:
+#Unmeasured evolving traits   |   Measured Morphology
+paste(as.integer(VP_OrgDet$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
+#Residuals left:
+paste(as.integer(VP_OrgDet$part$indfract$Adj.R.square[4]*100), "%", sep="")
+
+#EXPECTED VARIANCE EXPLAINED BY UNMEASURED TRAITS:
+as.integer(VP_DPM$part$indfract$Adj.R.square[4]*100)*VP_OrgDet$part$fract$Adj.R.square[1]
+
+varpart(as.dist(UM_ran_Residuals), X = unmeasured, measured) -> Resvars
+#Unexplained Variance explained by:
+#Unmeasured evolving traits   |   Measured Morphology
+paste(as.integer(Resvars$part$fract$Adj.R.square[1:2]*100), c("%","%"), sep="")
+#Residuals left:
+paste(as.integer(Resvars$part$indfract$Adj.R.square[4]*100), "%", sep="")
 
 #Figuring out number of traits involved
 cbind(sqrt(as.numeric(phylodist)), as.numeric(morphdist)) %>% as.data.frame() -> PDEDdists
