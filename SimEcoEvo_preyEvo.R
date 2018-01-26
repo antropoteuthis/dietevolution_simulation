@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 4
+nmeasured = 6
 kind_M = "BM"
-nunmeasured = 4
+nunmeasured = 6
 kind_U = "BM"
 
 #Measured Traits
@@ -92,7 +92,7 @@ habitat_zones[habitat < quantile(habitat)[2]] <- 1
 phylosignal(habitat_zones,ultratree)
 
 #Prey availability
-foodtypes = paste(rep("F",6),1:6,sep="")
+foodtypes = paste(rep("F",10),1:10,sep="")
 preytree = chronos(rtree(length(foodtypes)))
 preytree$tip.label <- foodtypes
 preytraits = as.data.frame(preytree$tip.label)
@@ -102,6 +102,8 @@ for(i in 1:ncol(traits)){
   }
 preytraits = preytraits[,-1]
 names(preytraits) = paste(rep("PT",ncol(preytraits)), 1:ncol(preytraits), sep= "")
+
+refPT = rTraitCont(preytree, model="BM")
 
 preyfields = list()
 for(i in 1:max(habitat_zones)){
@@ -146,7 +148,9 @@ selecdist <- vegdist(selectivity, "euc") %>% as.matrix()
 preyfielddist <- vegdist(preyfield,"bray") %>% as.matrix()
 REV_dietdist <- vegdist(t(diet),"bray") %>% as.matrix()
 REV_preyfielddist <- vegdist(t(preyfield),"bray") %>% as.matrix()
+REV_selectivitydist <- vegdist(t(selectivity),"euc") %>% as.matrix()
 REV_preytraitdist <- vegdist(preytraits,"euc") %>% as.matrix()
+preyphylodist <- cophenetic(preytree) %>% as.matrix()
 
 ###### Quality Assesment ######
   #These should all be TRUE
@@ -154,6 +158,13 @@ mantel.partial(preyfielddist, traitdist, phylodist)$signif > 0.05
 mantel(dietdist, selecdist)$signif < 0.05
 mantel(traitdist, selecdist)$signif < 0.05
 mantel(dietdist, traitdist)$signif < 0.05
+mantel(preyphylodist, REV_preytraitdist)$signif < 0.05
+mantel(preyphylodist, REV_selectivitydist)$signif < 0.05
+mantel(REV_preytraitdist, REV_selectivitydist)$signif < 0.05
+mantel(REV_preytraitdist, REV_dietdist)$signif < 0.05
+
+varpart(t(selectivity), preytraits, refPT)$part$frac$Adj.R.squared[2]*100
+varpart(selectivity, traits, refTs$BM) $part$frac$Adj.R.squared[1]*100
 
   #There should be more than 10 correlations between traits and prey types ingested
 cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+length(foodtypes)))] %>% .[.<0.05 & .>0] %>% length()
