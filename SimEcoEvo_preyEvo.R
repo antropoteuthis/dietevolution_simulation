@@ -91,10 +91,10 @@ habitat_zones[habitat < quantile(habitat)[3]] <- 2
 habitat_zones[habitat < quantile(habitat)[2]] <- 1
 phylosignal(habitat_zones,ultratree)
 
-#Prey availability
-foodtypes = paste(rep("F",10),1:10,sep="")
-preytree = chronos(rtree(length(foodtypes)))
-preytree$tip.label <- foodtypes
+#Prey evolution
+preytypes = paste(rep("P",10),1:10,sep="")
+preytree = chronos(rtree(length(preytypes)))
+preytree$tip.label <- preytypes
 preytraits = as.data.frame(preytree$tip.label)
 for(i in 1:ncol(traits)){
     VAL = mean(traits[,i])
@@ -105,12 +105,13 @@ names(preytraits) = paste(rep("PT",ncol(preytraits)), 1:ncol(preytraits), sep= "
 
 refPT = rTraitCont(preytree, model="BM")
 
+#Prey availability
 preyfields = list()
 for(i in 1:max(habitat_zones)){
-  preyfields[[i]] <- as.integer(runif(length(foodtypes), 0.1, 1000))
-  names(preyfields[[i]]) = foodtypes
+  preyfields[[i]] <- as.integer(runif(length(preytypes), 0.1, 1000))
+  names(preyfields[[i]]) = preytypes
 }
-preyfield = foodtypes
+preyfield = preytypes
 for(i in 1:length(habitat_zones)){
   preyfield = rbind(preyfield, preyfields[[habitat_zones[i]]]) 
 }
@@ -121,9 +122,9 @@ physignal(preyfield, ultratree)
 
 #Diet
 selectivity = preyfield
- for(i in 1:length(foodtypes)){
+ for(i in 1:length(preytypes)){
    #traits_i = traits[,sample(1:ncol(traits),2)]
-   traits_i = traits[,sample(1:ncol(traits),round(ncol(traits)/4))]
+   traits_i = traits[,sample(1:ncol(traits),round(ncol(traits)/2))]
    preytraits_i = preytraits[,sample(1:ncol(preytraits),length(traits_i))]
    if(ncol(traits)<4){traits_i = traits[,sample(1:ncol(traits),1)]}
    for(j in 1:length(ultratree$tip.label))
@@ -167,7 +168,7 @@ varpart(t(selectivity), preytraits, refPT)$part$frac$Adj.R.squared[2]*100
 varpart(selectivity, traits, refTs$BM) $part$frac$Adj.R.squared[1]*100
 
   #There should be more than 10 correlations between traits and prey types ingested
-cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+length(foodtypes)))] %>% .[.<0.05 & .>0] %>% length()
+cor.table(cbind(traits,diet))$P[1:ncol(traits),((ncol(traits)+1):(ncol(traits)+length(preytypes)))] %>% .[.<0.05 & .>0] %>% length()
 
   #EXPECTED VARIANCE DECOMPOSITION:
 paste("Phylogeny in Diet:   ", paste(floor((varpart(diet, refTs$BM, refTs$OU)$part$fract$Adj.R.square[1])*100)), "%", sep="")
