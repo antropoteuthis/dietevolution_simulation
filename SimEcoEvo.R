@@ -361,7 +361,19 @@ plot(phy_PC1, morph_PC1)
 text(phy_PC1, morph_PC1, names(phy_PC1), cex=0.4, col="blue")
 plot(as.numeric(sqrt(phylodist[upper.tri(phylodist)])), as.numeric(morphdist[upper.tri(morphdist)]))
 
-
 FPDists = as.matrix(vegdist(cbind(phy_PC1, morph_PC1), "euc"))
 heatmap(FPDists, symm=T)
 
+#Factor analysis
+FAdiet_2 = factanal(diet[2:6], factors=2, scores="regression")$scores
+phylosig(ultratree, FAdiet_2[,1])
+phylosig(ultratree, FAdiet_2[,2])
+cor.table(cbind(measured, FAdiet_2))$r[(nmeasured+1):(nmeasured+2),1:nmeasured]
+cor.table(cbind(preyfield, FAdiet_2))$r[(length(foodtypes)+1):(length(foodtypes)+2),1:length(foodtypes)]
+cor.table(cbind(habitat, FAdiet_2))$r[,1]
+F1 = as.numeric(FAdiet_2[,1])
+names(F1) = rownames(FAdiet_2)
+M1 = measured$MT1
+names(M1) = rownames(measured)
+pgls.SEy(model = F1~M1,tree=ultratree, data=as.data.frame(cbind(F1, M1)))
+pgls.SEy(model = F1~M1,tree=ultratree, data=as.data.frame(cbind(F1, sample(M1, length(M1), replace = F))))

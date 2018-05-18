@@ -16,9 +16,9 @@ library(geomorph)
 ultratree <- rtree(50) %>% chronos()
 ultratree$tip.label <- paste("SP", 1:length(ultratree$tip.label), sep="")
 
-nmeasured = 6
+nmeasured = 5
 kind_M = "BM"
-nunmeasured = 6
+nunmeasured = 5
 kind_U = "BM"
 
 #Measured Traits
@@ -123,14 +123,10 @@ physignal(preyfield, ultratree)
 #Diet
 selectivity = preyfield
  for(i in 1:length(preytypes)){
-   #traits_i = traits[,sample(1:ncol(traits),2)]
-   traits_i = traits[,sample(1:ncol(traits),round(ncol(traits)/2))]
-   preytraits_i = preytraits[,sample(1:ncol(preytraits),length(traits_i))]
-   if(ncol(traits)<4){traits_i = traits[,sample(1:ncol(traits),1)]}
    for(j in 1:length(ultratree$tip.label))
-     #selectivity[j,i] <- (mean(traits_i[,1])/traits_i[j,1])*(mean(traits_i[,2])/traits_i[j,2])
-     MeanV = mean(unlist(c(sapply(preytraits_i, mean), traits_i[j,])))
-     selectivity[j,i] <- prod(abs((sapply(preytraits_i, mean) - traits_i[j,])/MeanV))
+     SEL_VAL <- abs(traits[j,]-preytraits[i,])
+     SEL_VAL = SEL_VAL[1,]/rowMeans(preytraits[i,])
+     selectivity[j,i] <- 1/sum(t(SEL_VAL)[,1])[1]
  }
 selectivity = (selectivity/colMeans(selectivity))/10
 selectivity = selectivity/rowSums(selectivity)
