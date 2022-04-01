@@ -1,5 +1,7 @@
 # Analayzing the Organismal and Evolutionary Determinants of Diet
 
+I simulated the evolution of characters on the tree, including a habitat vector with a stochastic component. I generated random prey availabilities for each species depending on their habitat. In addition, I used linear models that would combine and transform evolving characters into specific selectivity loadings (mechanistic rules). Diet was calculated as a matrix multiplication between selectivity and availability. A variable number of observable and unobservable traits were simulated under different models of evolution (BM, OU, EB).  The resulting data was analyzed using variance partitioning tools, distance based methods, and phylogenetic methods. The results show the ability of the proposed methods to recover the relative contribution of the different generative processes in the diet-habitat-morphology-phylogeny data, and to identify the evolutionary models underlying the characters involved. Moreover, I was able to use the phylogenetic structure in the residuals to separate the relative contribution of unmeasured key traits from other sources of error.
+
 Goals:
 
 	-Simulate the determination of diet in a clade of predators with evolving functional traits
